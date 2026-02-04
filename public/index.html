@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Lista de Tarefas</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Lista de Tarefas</h1>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Tarefas</div>
+        <div id="lista"></div>
+      </div>
+      <div class="footer-total">
+        <span>Total <span id="totalRodape">R$ 0,00</span></span>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Incluir</div>
+
+        <form id="form">
+          <div class="row">
+            <div class="field">
+              <label for="novoNome">Nome da tarefa</label>
+              <input id="novoNome" required />
+            </div>
+
+            <div class="field" style="max-width: 180px">
+              <label for="novoCusto">Custo (R$)</label>
+              <input
+                id="novoCusto"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+
+            <div class="field" style="max-width: 190px">
+              <label for="novoData">Data-limite</label>
+              <input id="novoData" type="date" required />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" type="submit">Incluir</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
