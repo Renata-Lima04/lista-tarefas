@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import { pool, initDb } from "./db.js";
@@ -9,6 +10,15 @@ app.use(express.static(path.resolve("public")));
 
 // inicializa o banco
 await initDb();
+
+function parseCusto(valor) {
+  const s = String(valor ?? "").trim().replace(",", ".");
+  const n = Number(s);
+  return n;
+}
+
+// limite do seu NUMERIC(12,2) -> até 9.999.999.999,99
+const CUSTO_MAX = 9999999999.99;
 
 // rota teste
 app.get("/api/teste", (req, res) => {
@@ -38,10 +48,17 @@ app.post("/api/tarefas", async (req, res) => {
     return res.status(400).json({ error: "Nome é obrigatório." });
   }
 
-  const custoNum = Number(String(custo).replace(",", "."));
-  if (Number.isNaN(custoNum) || custoNum < 0) {
-    return res.status(400).json({ error: "Custo inválido." });
-  }
+  const custoNum = parseCusto(custo);
+
+if (!Number.isFinite(custoNum) || custoNum < 0) {
+  return res.status(400).json({ error: "Custo inválido." });
+}
+
+if (custoNum > CUSTO_MAX) {
+  return res.status(400).json({
+    error: "Custo muito alto. Máximo permitido: 9.999.999.999,99."
+  });
+}
 
   const dataValida =
     typeof data_limite === "string" &&
@@ -52,13 +69,7 @@ app.post("/api/tarefas", async (req, res) => {
     return res.status(400).json({ error: "Data-limite inválida." });
   }
 
-  // não aceitar datas passadas (comparando só a data)
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const dataInformada = new Date(data_limite + "T00:00:00");
-  if (dataInformada < hoje) {
-    return res.status(400).json({ error: "A data-limite não pode ser anterior a hoje." });
-  }
+
 
   try {
     // ordem = max + 1
@@ -111,10 +122,17 @@ app.put("/api/tarefas/:id", async (req, res) => {
     return res.status(400).json({ error: "Nome é obrigatório." });
   }
 
-  const custoNum = Number(String(custo).replace(",", "."));
-  if (Number.isNaN(custoNum) || custoNum < 0) {
-    return res.status(400).json({ error: "Custo inválido." });
-  }
+  const custoNum = parseCusto(custo);
+
+if (!Number.isFinite(custoNum) || custoNum < 0) {
+  return res.status(400).json({ error: "Custo inválido." });
+}
+
+if (custoNum > CUSTO_MAX) {
+  return res.status(400).json({
+    error: "Custo muito alto. Máximo permitido: 9.999.999.999,99."
+  });
+}
 
   const dataValida =
     typeof data_limite === "string" &&
@@ -125,13 +143,7 @@ app.put("/api/tarefas/:id", async (req, res) => {
     return res.status(400).json({ error: "Data-limite inválida." });
   }
 
-  // não aceitar datas passadas
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const dataInformada = new Date(data_limite + "T00:00:00");
-  if (dataInformada < hoje) {
-    return res.status(400).json({ error: "A data-limite não pode ser anterior a hoje." });
-  }
+  
 
   try {
     // impedir duplicidade em outro registro

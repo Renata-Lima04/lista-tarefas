@@ -34,7 +34,7 @@ async function carregar() {
 
         <div class="field" style="max-width:180px;">
           <label>Custo (R$)</label>
-          <input class="custo" type="number" step="0.01" min="0" value="${t.custo}" disabled />
+          <input class="custo" type="text" inputmode="decimal" value="${t.custo}" disabled />
         </div>
 
         <div class="field" style="max-width:190px;">
@@ -111,15 +111,24 @@ async function carregar() {
     };
 
     // EDITAR / SALVAR
-    btnEditar.onclick = async () => {
-      if (btnEditar.textContent === "Editar") {
-        inpNome.disabled = false;
-        inpCusto.disabled = false;
-        inpData.disabled = false;
-        btnEditar.textContent = "Salvar";
-        inpNome.focus();
-        return;
-      }
+    // EDITAR / SALVAR
+btnEditar.onclick = async () => {
+
+  if (btnEditar.textContent === "Editar") {
+
+    // guardar valores originais
+    btnEditar.dataset.nomeOriginal = inpNome.value;
+    btnEditar.dataset.custoOriginal = inpCusto.value;
+    btnEditar.dataset.dataOriginal = inpData.value;
+
+    inpNome.disabled = false;
+    inpCusto.disabled = false;
+    inpData.disabled = false;
+    btnEditar.textContent = "Salvar";
+
+    inpNome.focus();
+    return;
+  }
 
       const payload = {
         nome: inpNome.value.trim(),
@@ -132,12 +141,17 @@ async function carregar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+if (!resp.ok) {
+  const err = await resp.json().catch(() => ({ error: "Erro ao salvar." }));
 
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Erro" }));
-        alert(err.error || "Erro ao salvar");
-        return;
-      }
+  // volta valores originais
+  inpNome.value = btnEditar.dataset.nomeOriginal ?? inpNome.value;
+  inpCusto.value = btnEditar.dataset.custoOriginal ?? inpCusto.value;
+  inpData.value = btnEditar.dataset.dataOriginal ?? inpData.value;
+
+  alert(err.error || "Erro ao salvar.");
+  return;
+}
 
       inpNome.disabled = true;
       inpCusto.disabled = true;
@@ -204,7 +218,7 @@ async function carregar() {
 
       carregar();
     });
-    // ========= FIM DRAG AND DROP =========
+    // FIM DRAG AND DROP
 
     listaEl.appendChild(div);
   });
@@ -220,15 +234,7 @@ form.onsubmit = async (e) => {
   const custo = document.getElementById("novoCusto").value;
   const data_limite = document.getElementById("novoData").value;
 
-  // não aceitar datas passadas (front)
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const dataInformada = new Date(data_limite + "T00:00:00");
-
-  if (dataInformada < hoje) {
-    alert("A data-limite não pode ser anterior a hoje.");
-    return;
-  }
+  
 
   const resp = await fetch("/api/tarefas", {
     method: "POST",
@@ -242,8 +248,11 @@ form.onsubmit = async (e) => {
     return;
   }
 
-  form.reset();
-  carregar();
+form.reset();
+document.getElementById("novoNome").focus();
+carregar();
 };
 
 carregar();
+
+document.getElementById("novoNome").focus();
